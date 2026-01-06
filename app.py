@@ -26,7 +26,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-COLORS = {
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'dark'
+
+DARK_COLORS = {
     'background': '#0E1117',
     'card_bg': '#1E2130',
     'card_border': '#2D3348',
@@ -38,61 +41,98 @@ COLORS = {
     'warning': '#FFB74D',
     'text_primary': '#FFFFFF',
     'text_secondary': '#8B95A5',
-    'grid': '#2D3348'
+    'grid': '#2D3348',
+    'plotly_template': 'plotly_dark'
 }
 
-st.markdown("""
+LIGHT_COLORS = {
+    'background': '#F8FAFC',
+    'card_bg': '#FFFFFF',
+    'card_border': '#E2E8F0',
+    'primary': '#0891B2',
+    'primary_gradient': 'linear-gradient(135deg, #0891B2 0%, #0EA5E9 100%)',
+    'secondary': '#0EA5E9',
+    'bullish': '#10B981',
+    'bearish': '#EF4444',
+    'warning': '#F59E0B',
+    'text_primary': '#1E293B',
+    'text_secondary': '#64748B',
+    'grid': '#E2E8F0',
+    'plotly_template': 'plotly_white'
+}
+
+COLORS = LIGHT_COLORS if st.session_state.theme == 'light' else DARK_COLORS
+
+def get_theme_css():
+    """Generate CSS based on current theme."""
+    is_dark = st.session_state.theme == 'dark'
+    c = COLORS
+    
+    if is_dark:
+        bg = '#0E1117'
+        card_bg = '#1E2130'
+        card_bg_gradient = 'linear-gradient(145deg, #1E2130 0%, #171B26 100%)'
+        header_gradient = 'linear-gradient(135deg, #1E2130 0%, #0E1117 100%)'
+        sidebar_gradient = 'linear-gradient(180deg, #1E2130 0%, #0E1117 100%)'
+    else:
+        bg = '#F8FAFC'
+        card_bg = '#FFFFFF'
+        card_bg_gradient = 'linear-gradient(145deg, #FFFFFF 0%, #F1F5F9 100%)'
+        header_gradient = 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)'
+        sidebar_gradient = 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)'
+    
+    return f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    * {
+    * {{
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+    }}
     
-    .stApp {
-        background-color: #0E1117;
-    }
+    .stApp {{
+        background-color: {bg};
+    }}
     
-    .main-header {
-        background: linear-gradient(135deg, #1E2130 0%, #0E1117 100%);
+    .main-header {{
+        background: {header_gradient};
         padding: 1.5rem 2rem;
         border-radius: 16px;
-        border: 1px solid #2D3348;
+        border: 1px solid {c['card_border']};
         margin-bottom: 1.5rem;
-    }
+    }}
     
-    .main-title {
+    .main-title {{
         font-size: 2rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #00D4AA 0%, #00A3FF 100%);
+        background: {c['primary_gradient']};
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         margin: 0;
-    }
+    }}
     
-    .main-subtitle {
-        color: #8B95A5;
+    .main-subtitle {{
+        color: {c['text_secondary']};
         font-size: 0.95rem;
         margin-top: 0.5rem;
-    }
+    }}
     
-    .metric-card {
-        background: linear-gradient(145deg, #1E2130 0%, #171B26 100%);
-        border: 1px solid #2D3348;
+    .metric-card {{
+        background: {card_bg_gradient};
+        border: 1px solid {c['card_border']};
         border-radius: 16px;
         padding: 1.25rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, {'0.3' if is_dark else '0.08'});
         transition: all 0.3s ease;
-    }
+    }}
     
-    .metric-card:hover {
-        border-color: #00D4AA;
+    .metric-card:hover {{
+        border-color: {c['primary']};
         box-shadow: 0 8px 30px rgba(0, 212, 170, 0.15);
         transform: translateY(-2px);
-    }
+    }}
     
-    .metric-icon {
+    .metric-icon {{
         width: 42px;
         height: 42px;
         border-radius: 12px;
@@ -101,37 +141,37 @@ st.markdown("""
         justify-content: center;
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
-    }
+    }}
     
-    .metric-label {
-        color: #8B95A5;
+    .metric-label {{
+        color: {c['text_secondary']};
         font-size: 0.8rem;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 0.35rem;
-    }
+    }}
     
-    .metric-value {
-        color: #FFFFFF;
+    .metric-value {{
+        color: {c['text_primary']};
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 0.35rem;
-    }
+    }}
     
-    .metric-change {
+    .metric-change {{
         font-size: 0.85rem;
         font-weight: 600;
         display: flex;
         align-items: center;
         gap: 4px;
-    }
+    }}
     
-    .bullish { color: #00E676; }
-    .bearish { color: #FF5252; }
-    .neutral { color: #8B95A5; }
+    .bullish {{ color: {c['bullish']}; }}
+    .bearish {{ color: {c['bearish']}; }}
+    .neutral {{ color: {c['text_secondary']}; }}
     
-    .signal-badge {
+    .signal-badge {{
         display: inline-flex;
         align-items: center;
         padding: 0.5rem 1.25rem;
@@ -140,94 +180,94 @@ st.markdown("""
         font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-    }
+    }}
     
-    .signal-buy {
+    .signal-buy {{
         background: linear-gradient(135deg, rgba(0, 230, 118, 0.2) 0%, rgba(0, 230, 118, 0.1) 100%);
-        color: #00E676;
+        color: {c['bullish']};
         border: 1px solid rgba(0, 230, 118, 0.3);
-    }
+    }}
     
-    .signal-sell {
+    .signal-sell {{
         background: linear-gradient(135deg, rgba(255, 82, 82, 0.2) 0%, rgba(255, 82, 82, 0.1) 100%);
-        color: #FF5252;
+        color: {c['bearish']};
         border: 1px solid rgba(255, 82, 82, 0.3);
-    }
+    }}
     
-    .signal-hold {
+    .signal-hold {{
         background: linear-gradient(135deg, rgba(255, 183, 77, 0.2) 0%, rgba(255, 183, 77, 0.1) 100%);
-        color: #FFB74D;
+        color: {c['warning']};
         border: 1px solid rgba(255, 183, 77, 0.3);
-    }
+    }}
     
-    .chart-container {
-        background: linear-gradient(145deg, #1E2130 0%, #171B26 100%);
-        border: 1px solid #2D3348;
+    .chart-container {{
+        background: {card_bg_gradient};
+        border: 1px solid {c['card_border']};
         border-radius: 16px;
         padding: 1.5rem;
         margin-bottom: 1rem;
-    }
+    }}
     
-    .section-header {
-        color: #FFFFFF;
+    .section-header {{
+        color: {c['text_primary']};
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 8px;
-    }
+    }}
     
-    .info-box {
+    .info-box {{
         background: rgba(0, 163, 255, 0.1);
         border: 1px solid rgba(0, 163, 255, 0.3);
         border-radius: 12px;
         padding: 1rem;
-        color: #00A3FF;
+        color: {c['secondary']};
         font-size: 0.9rem;
-    }
+    }}
     
-    .warning-box {
+    .warning-box {{
         background: rgba(255, 183, 77, 0.1);
         border: 1px solid rgba(255, 183, 77, 0.3);
         border-radius: 12px;
         padding: 1rem;
-        color: #FFB74D;
+        color: {c['warning']};
         font-size: 0.9rem;
-    }
+    }}
     
-    .success-box {
+    .success-box {{
         background: rgba(0, 230, 118, 0.1);
         border: 1px solid rgba(0, 230, 118, 0.3);
         border-radius: 12px;
         padding: 1rem;
-        color: #00E676;
+        color: {c['bullish']};
         font-size: 0.9rem;
-    }
+    }}
     
-    .danger-box {
+    .danger-box {{
         background: rgba(255, 82, 82, 0.1);
         border: 1px solid rgba(255, 82, 82, 0.3);
         border-radius: 12px;
         padding: 1rem;
-        color: #FF5252;
+        color: {c['bearish']};
         font-size: 0.9rem;
-    }
+    }}
     
-    div[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1E2130 0%, #0E1117 100%);
-        border-right: 1px solid #2D3348;
-    }
+    div[data-testid="stSidebar"] {{
+        background: {sidebar_gradient};
+        border-right: 1px solid {c['card_border']};
+    }}
     
     div[data-testid="stSidebar"] .stMarkdown h1,
     div[data-testid="stSidebar"] .stMarkdown h2,
-    div[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #FFFFFF;
-    }
+    div[data-testid="stSidebar"] .stMarkdown h3 {{
+        color: {c['text_primary']};
+    }}
     
-    .stButton>button {
-        background: linear-gradient(135deg, #00D4AA 0%, #00A3FF 100%);
-        color: #0E1117;
+    .stButton>button {{
+        background: {c['primary_gradient']};
+        color: {'#0E1117' if is_dark else '#FFFFFF'};
         border: none;
         border-radius: 12px;
         padding: 0.75rem 1.5rem;
@@ -235,79 +275,81 @@ st.markdown("""
         font-size: 0.95rem;
         transition: all 0.3s ease;
         width: 100%;
-    }
+    }}
     
-    .stButton>button:hover {
+    .stButton>button:hover {{
         box-shadow: 0 8px 25px rgba(0, 212, 170, 0.4);
         transform: translateY(-2px);
-    }
+    }}
     
-    .stSelectbox>div>div, .stTextInput>div>div>input, .stSlider>div>div>div {
-        background-color: #1E2130;
-        border: 1px solid #2D3348;
+    .stSelectbox>div>div, .stTextInput>div>div>input, .stSlider>div>div>div {{
+        background-color: {card_bg};
+        border: 1px solid {c['card_border']};
         border-radius: 10px;
-        color: #FFFFFF;
-    }
+        color: {c['text_primary']};
+    }}
     
-    .stTabs [data-baseweb="tab-list"] {
+    .stTabs [data-baseweb="tab-list"] {{
         gap: 8px;
         background-color: transparent;
-    }
+    }}
     
-    .stTabs [data-baseweb="tab"] {
-        background-color: #1E2130;
-        border: 1px solid #2D3348;
+    .stTabs [data-baseweb="tab"] {{
+        background-color: {card_bg};
+        border: 1px solid {c['card_border']};
         border-radius: 10px;
-        color: #8B95A5;
+        color: {c['text_secondary']};
         padding: 0.75rem 1.25rem;
         font-weight: 500;
-    }
+    }}
     
-    .stTabs [aria-selected="true"] {
+    .stTabs [aria-selected="true"] {{
         background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 163, 255, 0.2) 100%);
-        border-color: #00D4AA;
-        color: #00D4AA;
-    }
+        border-color: {c['primary']};
+        color: {c['primary']};
+    }}
     
-    .stDataFrame {
-        background-color: #1E2130;
+    .stDataFrame {{
+        background-color: {card_bg};
         border-radius: 12px;
-    }
+    }}
     
-    .stExpander {
-        background-color: #1E2130;
-        border: 1px solid #2D3348;
+    .stExpander {{
+        background-color: {card_bg};
+        border: 1px solid {c['card_border']};
         border-radius: 12px;
-    }
+    }}
     
-    div[data-testid="stMetricValue"] {
+    div[data-testid="stMetricValue"] {{
         font-size: 1.75rem;
         font-weight: 700;
-    }
+    }}
     
-    .stProgress > div > div > div {
-        background: linear-gradient(135deg, #00D4AA 0%, #00A3FF 100%);
-    }
+    .stProgress > div > div > div {{
+        background: {c['primary_gradient']};
+    }}
     
-    ::-webkit-scrollbar {
+    ::-webkit-scrollbar {{
         width: 8px;
         height: 8px;
-    }
+    }}
     
-    ::-webkit-scrollbar-track {
-        background: #0E1117;
-    }
+    ::-webkit-scrollbar-track {{
+        background: {bg};
+    }}
     
-    ::-webkit-scrollbar-thumb {
-        background: #2D3348;
+    ::-webkit-scrollbar-thumb {{
+        background: {c['card_border']};
         border-radius: 4px;
-    }
+    }}
     
-    ::-webkit-scrollbar-thumb:hover {
-        background: #3D4358;
-    }
+    ::-webkit-scrollbar-thumb:hover {{
+        background: {c['text_secondary']};
+    }}
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(get_theme_css(), unsafe_allow_html=True)
 
 
 def create_header():
@@ -463,7 +505,7 @@ def create_price_chart(df, forecast_data=None, show_volume=True):
         )
     
     fig.update_layout(
-        template='plotly_dark',
+        template=COLORS['plotly_template'],
         paper_bgcolor=COLORS['card_bg'],
         plot_bgcolor=COLORS['card_bg'],
         font=dict(family='Inter', color=COLORS['text_primary']),
@@ -593,7 +635,7 @@ def create_indicator_chart(df, indicator_type='RSI'):
         fig.update_layout(title='Bollinger Bands (20, 2)')
     
     fig.update_layout(
-        template='plotly_dark',
+        template=COLORS['plotly_template'],
         paper_bgcolor=COLORS['card_bg'],
         plot_bgcolor=COLORS['card_bg'],
         font=dict(family='Inter', color=COLORS['text_primary']),
@@ -668,7 +710,7 @@ def create_signal_chart(signal_history):
         )
     
     fig.update_layout(
-        template='plotly_dark',
+        template=COLORS['plotly_template'],
         paper_bgcolor=COLORS['card_bg'],
         plot_bgcolor=COLORS['card_bg'],
         font=dict(family='Inter', color=COLORS['text_primary']),
@@ -712,7 +754,7 @@ def create_equity_chart(equity_df, benchmark_df=None):
         )
     
     fig.update_layout(
-        template='plotly_dark',
+        template=COLORS['plotly_template'],
         paper_bgcolor=COLORS['card_bg'],
         plot_bgcolor=COLORS['card_bg'],
         font=dict(family='Inter', color=COLORS['text_primary']),
@@ -732,13 +774,31 @@ def create_equity_chart(equity_df, benchmark_df=None):
 def render_sidebar():
     """Render the sidebar controls."""
     with st.sidebar:
-        st.markdown("""
+        st.markdown(f"""
         <div style="text-align: center; margin-bottom: 1.5rem;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
-            <div style="font-weight: 600; color: #00D4AA;">Market Forecaster</div>
+            <div style="font-weight: 600; color: {COLORS['primary']};">Market Forecaster</div>
         </div>
         """, unsafe_allow_html=True)
         
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.markdown(f"<span style='color: {COLORS['text_secondary']}; font-size: 0.85rem;'>Theme</span>", unsafe_allow_html=True)
+        with col2:
+            theme_toggle = st.toggle(
+                "🌙" if st.session_state.theme == 'dark' else "☀️",
+                value=st.session_state.theme == 'light',
+                key="theme_toggle",
+                help="Toggle between dark and light mode"
+            )
+            if theme_toggle and st.session_state.theme == 'dark':
+                st.session_state.theme = 'light'
+                st.rerun()
+            elif not theme_toggle and st.session_state.theme == 'light':
+                st.session_state.theme = 'dark'
+                st.rerun()
+        
+        st.markdown("---")
         st.markdown("### 🎯 Asset Selection")
         
         popular = get_popular_symbols()
@@ -1327,7 +1387,7 @@ def main():
         )
         
         vol_fig.update_layout(
-            template='plotly_dark',
+            template=COLORS['plotly_template'],
             paper_bgcolor=COLORS['card_bg'],
             plot_bgcolor=COLORS['card_bg'],
             font=dict(family='Inter', color=COLORS['text_primary']),
