@@ -1,0 +1,130 @@
+Build a complete Python web app called “TekCorp Forecast” (AI Stock & Crypto Price Forecasting App).
+
+GOAL
+A Streamlit web app that lets users choose a stock ticker or crypto symbol, downloads historical price data, computes technical indicators, forecasts prices for 7–30 days using multiple models (Prophet, ARIMA, LSTM/GRU), shows volatility alerts, generates a Buy/Hold/Sell signal, and includes a backtesting section with performance charts.
+
+TECH STACK (REQUIRED)
+- Python 3.11+
+- Streamlit UI
+- yfinance for stocks and coins (use yfinance tickers like AAPL, TSLA, BTC-USD, ETH-USD)
+- pandas, numpy
+- matplotlib and/or plotly for charts
+- scikit-learn for scaling & metrics
+- statsmodels for ARIMA
+- prophet for Prophet forecasts (use “prophet” package)
+- tensorflow/keras for LSTM/GRU
+- ta (technical analysis) library OR implement indicators manually if ta fails
+
+APP PAGES / TABS
+Use Streamlit tabs:
+1) “Overview”
+2) “Indicators”
+3) “Forecast”
+4) “Signals”
+5) “Backtest”
+6) “Alerts & Settings”
+
+UI REQUIREMENTS
+- Sidebar:
+  - Input: Symbol (default BTC-USD)
+  - Time range selector (1y, 2y, 5y, max)
+  - Forecast horizon slider (7 to 30 days)
+  - Model selector (Prophet / ARIMA / LSTM / GRU) + option “Compare All”
+  - Interval selector (1d, 1h) (if 1h is too heavy, default to 1d and warn user)
+  - Risk threshold for volatility alerts (e.g., daily vol % threshold)
+  - Button: “Run Analysis”
+- Main area:
+  - Price chart (candlestick if possible, else line chart)
+  - Forecast plot with confidence intervals (Prophet) or prediction bands (where possible)
+  - Table of predictions for the next N days
+
+DATA HANDLING
+- Fetch OHLCV from yfinance.
+- Clean missing values, ensure DateTime index, ensure timezone safe.
+- Feature engineering:
+  - Returns (log returns)
+  - Rolling volatility (7-day and 14-day)
+  - Moving averages: SMA(20), SMA(50), EMA(20)
+  - RSI(14)
+  - MACD (12,26,9)
+  - Bollinger Bands (20, 2)
+- Store computed features in a dataframe.
+- Cache data fetch and indicator computation using st.cache_data.
+
+FORECASTING MODELS
+1) Prophet:
+   - Use ds (date) and y (close) columns.
+   - Train on history, forecast future horizon days.
+2) ARIMA:
+   - Use statsmodels ARIMA on close or returns.
+   - Auto-select order with a simple grid search (small grid) OR use AIC to pick among a few candidate (p,d,q) combos.
+3) LSTM & GRU:
+   - Create supervised sequences (lookback window like 30).
+   - Scale data (MinMaxScaler).
+   - Model: small, fast architecture (1–2 layers) + early stopping.
+   - Predict the next horizon days recursively (multi-step).
+   - Provide training progress text and allow user to limit epochs (default 10) to keep it fast.
+
+COMPARE MODELS (IMPORTANT)
+If “Compare All” is selected:
+- Train each model (fast defaults)
+- Report metrics on a recent validation window (e.g., last 60 days):
+  - RMSE
+  - MAE
+  - MAPE
+- Show a comparison table and the best model.
+
+SIGNALS (BUY/HOLD/SELL)
+Create a simple, explainable rule-based signal:
+- Use trend + RSI + MACD:
+  - BUY if price above SMA50 AND RSI < 70 AND MACD > signal line
+  - SELL if price below SMA50 OR RSI > 75 OR MACD < signal line
+  - Else HOLD
+Show:
+- Current signal
+- Short explanation text (why the signal fired)
+- Signal history chart over last 90 days
+
+BACKTESTING
+Implement a basic backtest for the signal:
+- Start with initial capital (e.g., 10,000)
+- One-position strategy (in or out)
+- Trades based on signal transitions
+Output:
+- Equity curve chart
+- Trade log table
+- Summary stats:
+  - Total return
+  - Max drawdown
+  - Win rate
+  - Sharpe ratio (simple)
+
+VOLATILITY ALERTS
+- Compute rolling volatility
+- Alert if volatility exceeds user threshold
+- Show a “Risk Status” badge (Low/Medium/High) and list recent high-vol days
+
+PROJECT STRUCTURE (REQUIRED)
+Create files:
+- app.py (Streamlit entry)
+- services/data.py (download & caching)
+- services/indicators.py (all indicators)
+- services/models_prophet.py
+- services/models_arima.py
+- services/models_dl.py (LSTM/GRU)
+- services/signals.py
+- services/backtest.py
+- requirements.txt
+- README.md with run instructions
+
+QUALITY REQUIREMENTS
+- The code must run in Replit with minimal steps.
+- Include clear comments and docstrings.
+- Handle errors gracefully:
+  - invalid ticker
+  - empty data
+  - missing packages (show message)
+- Keep the app performant (avoid heavy training by default; provide “Advanced Settings” for more epochs).
+
+DELIVERABLE
+Generate all files with complete code, ready to run. Include the final “requirements.txt” and “README.md” instructions (how to run in Replit and locally).
