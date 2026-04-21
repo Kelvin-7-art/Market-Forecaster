@@ -3,6 +3,9 @@ Market Forecaster - AI Stock & Crypto Price Forecasting Platform
 A modern, professional financial analytics dashboard with dark mode UI.
 """
 
+import os
+os.environ["STREAMLIT_DATAFRAME_USE_ARROW"] = "false"
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -15,7 +18,11 @@ from services.data import fetch_market_data, get_ticker_info, validate_symbol, g
 from services.indicators import compute_all_indicators, get_current_indicators
 from services.models_prophet import forecast_prophet
 from services.models_arima import forecast_arima
-from services.models_dl import forecast_lstm, forecast_gru
+try:
+    from services.models_dl import forecast_lstm, forecast_gru
+    DL_AVAILABLE = True
+except Exception as e:
+    DL_AVAILABLE = False
 from services.signals import generate_signal, generate_signal_history
 from services.backtest import run_backtest, get_buy_and_hold_benchmark
 
@@ -350,6 +357,14 @@ def get_theme_css():
 """
 
 st.markdown(get_theme_css(), unsafe_allow_html=True)
+
+
+def safe_display_df(df):
+    """Render a dataframe without using pyarrow (Windows DLL safe)."""
+    try:
+        st.write(df.to_html(index=False), unsafe_allow_html=True)
+    except Exception:
+        st.write(df)
 
 
 def create_header():
@@ -1082,7 +1097,7 @@ def main():
             display_cols = ['Date', 'Close', 'SMA_20', 'SMA_50', 'RSI', 'MACD', 'MACD_Signal', 'BB_Upper', 'BB_Lower']
             display_df = df[display_cols].tail(30).copy()
             display_df['Date'] = pd.to_datetime(display_df['Date']).dt.strftime('%Y-%m-%d')
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            safe_display_df(display_df)
     
     with tabs[2]:
         st.markdown('<div class="section-header">AI Price Forecast</div>', unsafe_allow_html=True)
@@ -1096,19 +1111,33 @@ def main():
                 models_to_run = [params['model']]
             
             for model_name in models_to_run:
-                if model_name == "Prophet":
-                    result = forecast_prophet(df, params['horizon'])
-                elif model_name == "ARIMA":
-                    result = forecast_arima(df, params['horizon'])
-                elif model_name == "LSTM":
-                    result = forecast_lstm(df, params['horizon'])
-                elif model_name == "GRU":
-                    result = forecast_gru(df, params['horizon'])
-                
-                if result:
-                    forecast_results[model_name] = result
-            
-            if forecast_results:
+                try:
+                    if model_name == "Prophet":
+                        result = forecast_prophet(df, params['horizon'])
+                    elif model_name == "ARIMA":
+                        result = forecast_arima(df, params['horizon'])
+                    elif model_name == "LSTM":
+                        if DL_AVAILABLE:
+                            result = forecast_lstm(df, params['horizon'])
+                        else:
+                            st.warning("LSTM model not available (dependency issue)")
+                            continue
+                    elif model_name == "GRU":
+                        if DL_AVAILABLE:
+                            result = forecast_gru(df, params['horizon'])
+                        else:
+                            st.warning("GRU model not available (dependency issue)")
+                            continue
+                    else:
+                        continue
+
+                    if result is not None:
+                        forecast_results[model_name] = result
+
+                except Exception as e:
+                    st.error(f"{model_name} failed: {str(e)}")
+
+            if len(forecast_results) > 0:
                 st.session_state.forecast = list(forecast_results.values())[0]
                 
                 if params['model'] == "Compare All":
@@ -1125,9 +1154,12 @@ def main():
                         })
                     
                     comparison_df = pd.DataFrame(comparison_data)
-                    st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+                    safe_display_df(comparison_df)
                     
-                    best_model = min(forecast_results.items(), key=lambda x: x[1]['metrics']['RMSE'])
+                    best_model = min(
+                        forecast_results.items(),
+                        key=lambda x: x[1]['metrics'].get('RMSE', float('inf'))
+                    )
                     st.markdown(f"""
                     <div class="success-box">
                         <strong>Best Model:</strong> {best_model[0]} (lowest RMSE: ${best_model[1]['metrics']['RMSE']:,.2f})
@@ -1152,7 +1184,7 @@ def main():
                 forecast_df['Lower'] = forecast_df['Lower'].apply(lambda x: f"${x:,.2f}")
                 forecast_df['Upper'] = forecast_df['Upper'].apply(lambda x: f"${x:,.2f}")
                 
-                st.dataframe(forecast_df, use_container_width=True, hide_index=True)
+                safe_display_df(forecast_df)
                 
                 metrics = fc['metrics']
                 st.markdown(f"""
@@ -1287,7 +1319,7 @@ def main():
                                 trades_df['pnl'] = trades_df['pnl'].apply(lambda x: f"${x:,.2f}" if pd.notna(x) else "-")
                             if 'pnl_pct' in trades_df.columns:
                                 trades_df['pnl_pct'] = trades_df['pnl_pct'].apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "-")
-                            st.dataframe(trades_df, use_container_width=True, hide_index=True)
+                            safe_display_df(trades_df)
                         else:
                             st.info("No trades executed during the backtest period.")
         else:
@@ -1344,7 +1376,7 @@ def main():
                     display_df['Date'] = pd.to_datetime(display_df['Date']).dt.strftime('%Y-%m-%d')
                     display_df['Volatility_7d'] = display_df['Volatility_7d'].apply(lambda x: f"{x:.1f}%")
                     display_df.columns = ['Date', 'Close Price', '7D Volatility']
-                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                    safe_display_df(display_df)
             else:
                 st.markdown("""
                 <div class="success-box">
