@@ -25,7 +25,7 @@ https://your-app-link.streamlit.app
 ![Charts](Screenshot%202026-04-21%20172229.png)
 
 ###  Forecasting Models
-![Forecast](assets/forecast.png)
+![Forecast](Screenshot%202026-04-21%20172302.png)
 
 ###  Trading Signals
 ![Signals](assets/signals.png)
