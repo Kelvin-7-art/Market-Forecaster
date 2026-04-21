@@ -4,10 +4,15 @@ Prophet forecasting model service for Market Forecaster.
 
 import pandas as pd
 import numpy as np
-from prophet import Prophet
 import streamlit as st
 import warnings
 warnings.filterwarnings('ignore')
+
+try:
+    from prophet import Prophet
+    PROPHET_AVAILABLE = True
+except Exception:
+    PROPHET_AVAILABLE = False
 
 
 def forecast_prophet(df: pd.DataFrame, horizon: int = 14) -> dict:
@@ -21,6 +26,9 @@ def forecast_prophet(df: pd.DataFrame, horizon: int = 14) -> dict:
     Returns:
         Dictionary with forecast data and metrics
     """
+    if not PROPHET_AVAILABLE:
+        st.warning("Prophet is not available in this environment.")
+        return None
     try:
         prophet_df = df[['Date', 'Close']].copy()
         prophet_df.columns = ['ds', 'y']
