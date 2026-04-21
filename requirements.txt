@@ -1,23 +1,11 @@
-streamlit==1.53.0
-
-# Core data stack
-pandas==2.3.3
-numpy==2.4.0
-scipy==1.16.3
-
-# Visualization
-plotly==6.5.0
-matplotlib==3.10.8
-
-# ML (safe lightweight only)
-scikit-learn==1.8.0
-statsmodels==0.14.6
-
-# Finance / API
-requests==2.32.5
-yfinance==1.0
-
-# Utilities
-python-dateutil==2.9.0.post0
-pytz==2025.2
-tqdm==4.67.1
+streamlit
+pandas
+numpy
+plotly
+scikit-learn
+scipy
+statsmodels
+yfinance
+requests
+python-dateutil
+pytz
