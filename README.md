@@ -22,7 +22,7 @@ https://your-app-link.streamlit.app
 ![Dashboard](Screenshot%202026-04-21%20172032.png)
 
 ###  Price Chart & Indicators
-![Charts](assets/charts.png)
+![Charts](Screenshot%202026-04-21%20172229.png)
 
 ###  Forecasting Models
 ![Forecast](assets/forecast.png)
