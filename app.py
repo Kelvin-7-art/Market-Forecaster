@@ -16,25 +16,40 @@ from datetime import datetime, timedelta
 
 from services.data import fetch_market_data, get_ticker_info, validate_symbol, get_popular_symbols
 from services.indicators import compute_all_indicators, get_current_indicators
-try:
-    from services.models_prophet import forecast_prophet
-    PROPHET_AVAILABLE = True
-except Exception:
-    PROPHET_AVAILABLE = False
-
-try:
-    from services.models_arima import forecast_arima
-    ARIMA_AVAILABLE = True
-except Exception:
-    ARIMA_AVAILABLE = False
-
-try:
-    from services.models_dl import forecast_lstm, forecast_gru
-    DL_AVAILABLE = True
-except Exception:
-    DL_AVAILABLE = False
 from services.signals import generate_signal, generate_signal_history
 from services.backtest import run_backtest, get_buy_and_hold_benchmark
+
+
+def _load_prophet():
+    try:
+        from services.models_prophet import forecast_prophet
+        return forecast_prophet
+    except Exception:
+        return None
+
+
+def _load_arima():
+    try:
+        from services.models_arima import forecast_arima
+        return forecast_arima
+    except Exception:
+        return None
+
+
+def _load_lstm():
+    try:
+        from services.models_dl import forecast_lstm
+        return forecast_lstm
+    except Exception:
+        return None
+
+
+def _load_gru():
+    try:
+        from services.models_dl import forecast_gru
+        return forecast_gru
+    except Exception:
+        return None
 
 st.set_page_config(
     page_title="Market Forecaster",
@@ -1123,29 +1138,29 @@ def main():
             for model_name in models_to_run:
                 try:
                     if model_name == "Prophet":
-                        if PROPHET_AVAILABLE:
-                            result = forecast_prophet(df, params['horizon'])
-                        else:
+                        fn = _load_prophet()
+                        if fn is None:
                             st.warning("Prophet model not available in this environment.")
                             continue
+                        result = fn(df, params['horizon'])
                     elif model_name == "ARIMA":
-                        if ARIMA_AVAILABLE:
-                            result = forecast_arima(df, params['horizon'])
-                        else:
+                        fn = _load_arima()
+                        if fn is None:
                             st.warning("ARIMA model not available in this environment.")
                             continue
+                        result = fn(df, params['horizon'])
                     elif model_name == "LSTM":
-                        if DL_AVAILABLE:
-                            result = forecast_lstm(df, params['horizon'])
-                        else:
-                            st.warning("LSTM model not available (dependency issue)")
+                        fn = _load_lstm()
+                        if fn is None:
+                            st.warning("LSTM model not available in this environment.")
                             continue
+                        result = fn(df, params['horizon'])
                     elif model_name == "GRU":
-                        if DL_AVAILABLE:
-                            result = forecast_gru(df, params['horizon'])
-                        else:
-                            st.warning("GRU model not available (dependency issue)")
+                        fn = _load_gru()
+                        if fn is None:
+                            st.warning("GRU model not available in this environment.")
                             continue
+                        result = fn(df, params['horizon'])
                     else:
                         continue
 
