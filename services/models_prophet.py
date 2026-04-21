@@ -8,12 +8,6 @@ import streamlit as st
 import warnings
 warnings.filterwarnings('ignore')
 
-try:
-    from prophet import Prophet
-    PROPHET_AVAILABLE = True
-except Exception:
-    PROPHET_AVAILABLE = False
-
 
 def forecast_prophet(df: pd.DataFrame, horizon: int = 14) -> dict:
     """
@@ -26,7 +20,9 @@ def forecast_prophet(df: pd.DataFrame, horizon: int = 14) -> dict:
     Returns:
         Dictionary with forecast data and metrics
     """
-    if not PROPHET_AVAILABLE:
+    try:
+        from prophet import Prophet
+    except Exception:
         st.warning("Prophet is not available in this environment.")
         return None
     try:
