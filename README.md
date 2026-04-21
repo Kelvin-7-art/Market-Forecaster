@@ -19,7 +19,7 @@ https://your-app-link.streamlit.app
 ## App Preview
 
 ###  Dashboard Overview
-![Dashboard](Screenshot 2026-04-21 172032.png)
+![Dashboard]((https://github.com/Kelvin-7-art/Market-Forecaster/blob/ea48c096d768a5df8fe068743704c1e7a1fb5dfb/Screenshot%202026-04-21%20172032.png))
 
 ###  Price Chart & Indicators
 ![Charts](assets/charts.png)
