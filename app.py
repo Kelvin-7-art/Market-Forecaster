@@ -16,12 +16,22 @@ from datetime import datetime, timedelta
 
 from services.data import fetch_market_data, get_ticker_info, validate_symbol, get_popular_symbols
 from services.indicators import compute_all_indicators, get_current_indicators
-from services.models_prophet import forecast_prophet
-from services.models_arima import forecast_arima
+try:
+    from services.models_prophet import forecast_prophet
+    PROPHET_AVAILABLE = True
+except Exception:
+    PROPHET_AVAILABLE = False
+
+try:
+    from services.models_arima import forecast_arima
+    ARIMA_AVAILABLE = True
+except Exception:
+    ARIMA_AVAILABLE = False
+
 try:
     from services.models_dl import forecast_lstm, forecast_gru
     DL_AVAILABLE = True
-except Exception as e:
+except Exception:
     DL_AVAILABLE = False
 from services.signals import generate_signal, generate_signal_history
 from services.backtest import run_backtest, get_buy_and_hold_benchmark
@@ -1113,9 +1123,17 @@ def main():
             for model_name in models_to_run:
                 try:
                     if model_name == "Prophet":
-                        result = forecast_prophet(df, params['horizon'])
+                        if PROPHET_AVAILABLE:
+                            result = forecast_prophet(df, params['horizon'])
+                        else:
+                            st.warning("Prophet model not available in this environment.")
+                            continue
                     elif model_name == "ARIMA":
-                        result = forecast_arima(df, params['horizon'])
+                        if ARIMA_AVAILABLE:
+                            result = forecast_arima(df, params['horizon'])
+                        else:
+                            st.warning("ARIMA model not available in this environment.")
+                            continue
                     elif model_name == "LSTM":
                         if DL_AVAILABLE:
                             result = forecast_lstm(df, params['horizon'])
