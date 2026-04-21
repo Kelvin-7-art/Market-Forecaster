@@ -8,12 +8,6 @@ import streamlit as st
 import warnings
 warnings.filterwarnings('ignore')
 
-try:
-    from statsmodels.tsa.arima.model import ARIMA
-    ARIMA_AVAILABLE = True
-except Exception:
-    ARIMA_AVAILABLE = False
-
 
 def forecast_arima(df: pd.DataFrame, horizon: int = 14) -> dict:
     """
@@ -26,7 +20,9 @@ def forecast_arima(df: pd.DataFrame, horizon: int = 14) -> dict:
     Returns:
         Dictionary with forecast data and metrics
     """
-    if not ARIMA_AVAILABLE:
+    try:
+        from statsmodels.tsa.arima.model import ARIMA
+    except Exception:
         st.warning("ARIMA model is not available in this environment.")
         return None
     try:
