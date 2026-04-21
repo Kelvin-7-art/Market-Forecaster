@@ -19,7 +19,7 @@ https://your-app-link.streamlit.app
 ## App Preview
 
 ###  Dashboard Overview
-![Dashboard](assets/dashboard.png)
+![Dashboard](Screenshot 2026-04-21 172032.png)
 
 ###  Price Chart & Indicators
 ![Charts](assets/charts.png)
