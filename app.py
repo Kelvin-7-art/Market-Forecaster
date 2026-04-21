@@ -21,7 +21,7 @@ from services.backtest import run_backtest, get_buy_and_hold_benchmark
 
 st.set_page_config(
     page_title="Market Forecaster",
-    page_icon="📈",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -356,7 +356,7 @@ def create_header():
     """Create the main header section."""
     st.markdown("""
     <div class="main-header">
-        <h1 class="main-title">📊 Market Forecaster</h1>
+        <h1 class="main-title">Market Forecaster</h1>
         <p class="main-subtitle">AI-Powered Stock & Crypto Price Forecasting Platform</p>
     </div>
     """, unsafe_allow_html=True)
@@ -776,7 +776,6 @@ def render_sidebar():
     with st.sidebar:
         st.markdown(f"""
         <div style="text-align: center; margin-bottom: 1.5rem;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
             <div style="font-weight: 600; color: {COLORS['primary']};">Market Forecaster</div>
         </div>
         """, unsafe_allow_html=True)
@@ -786,7 +785,7 @@ def render_sidebar():
             st.markdown(f"<span style='color: {COLORS['text_secondary']}; font-size: 0.85rem;'>Theme</span>", unsafe_allow_html=True)
         with col2:
             theme_toggle = st.toggle(
-                "🌙" if st.session_state.theme == 'dark' else "☀️",
+                "Dark" if st.session_state.theme == 'dark' else "Light",
                 value=st.session_state.theme == 'light',
                 key="theme_toggle",
                 help="Toggle between dark and light mode"
@@ -799,7 +798,7 @@ def render_sidebar():
                 st.rerun()
         
         st.markdown("---")
-        st.markdown("### 🎯 Asset Selection")
+        st.markdown("### Asset Selection")
         
         popular = get_popular_symbols()
         category = st.selectbox("Category", list(popular.keys()), index=0)
@@ -814,7 +813,7 @@ def render_sidebar():
         if custom_symbol:
             symbol = custom_symbol.upper()
         
-        st.markdown("### ⏱️ Time Settings")
+        st.markdown("### Time Settings")
         
         period = st.selectbox(
             "Historical Period",
@@ -833,11 +832,11 @@ def render_sidebar():
         if interval == "1h":
             st.markdown("""
             <div class="warning-box">
-                ⚠️ Hourly data limited to 730 days and may be slower
+                Hourly data limited to 730 days and may be slower
             </div>
             """, unsafe_allow_html=True)
         
-        st.markdown("### 🔮 Forecast Settings")
+        st.markdown("### Forecast Settings")
         
         horizon = st.slider(
             "Forecast Horizon (days)",
@@ -854,7 +853,7 @@ def render_sidebar():
             help="Select the AI model for price forecasting"
         )
         
-        st.markdown("### ⚠️ Risk Settings")
+        st.markdown("### Risk Settings")
         
         vol_threshold = st.slider(
             "Volatility Alert Threshold (%)",
@@ -866,7 +865,7 @@ def render_sidebar():
         
         st.markdown("---")
         
-        run_analysis = st.button("🚀 Run Analysis", use_container_width=True)
+        run_analysis = st.button("Run Analysis", use_container_width=True)
         
         st.markdown("""
         <div style="margin-top: 2rem; text-align: center; color: #8B95A5; font-size: 0.75rem;">
@@ -904,7 +903,7 @@ def main():
             df = fetch_market_data(params['symbol'], params['period'], params['interval'])
             
             if df.empty:
-                st.error(f"❌ Could not fetch data for symbol: {params['symbol']}. Please check the symbol and try again.")
+                st.error(f"Could not fetch data for symbol: {params['symbol']}. Please check the symbol and try again.")
                 return
             
             df = compute_all_indicators(df)
@@ -915,7 +914,7 @@ def main():
     df = st.session_state.data
     
     if df is None or df.empty:
-        st.info("👈 Select an asset and click 'Run Analysis' to get started.")
+        st.info("Select an asset and click 'Run Analysis' to get started.")
         return
     
     indicators = get_current_indicators(df)
@@ -926,7 +925,7 @@ def main():
     with col1:
         st.markdown(
             create_metric_card(
-                "💰", 
+                "", 
                 "Current Price",
                 f"${indicators['price']:,.2f}",
                 indicators['price_change'],
@@ -940,7 +939,7 @@ def main():
         vol_class = "bullish" if vol < 30 else ("warning" if vol < 50 else "bearish")
         st.markdown(
             create_metric_card(
-                "📊",
+                "",
                 "7D Volatility",
                 f"{vol:.1f}%"
             ),
@@ -952,7 +951,7 @@ def main():
         rsi_status = "Oversold" if rsi < 30 else ("Overbought" if rsi > 70 else "Neutral")
         st.markdown(
             create_metric_card(
-                "📈",
+                "",
                 f"RSI ({rsi_status})",
                 f"{rsi:.1f}"
             ),
@@ -962,7 +961,7 @@ def main():
     with col4:
         st.markdown(
             create_metric_card(
-                "🎯",
+                "",
                 "Trading Signal",
                 signal_data['signal'],
                 is_signal=True,
@@ -973,10 +972,10 @@ def main():
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    tabs = st.tabs(["📊 Overview", "📈 Indicators", "🔮 Forecast", "🎯 Signals", "📉 Backtest", "⚠️ Alerts"])
+    tabs = st.tabs(["Overview", "Indicators", "Forecast", "Signals", "Backtest", "Alerts"])
     
     with tabs[0]:
-        st.markdown('<div class="section-header">📊 Price Chart</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Price Chart</div>', unsafe_allow_html=True)
         
         forecast_data = st.session_state.forecast
         fig = create_price_chart(df, forecast_data)
@@ -984,17 +983,17 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="section-header">📈 RSI</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header">RSI</div>', unsafe_allow_html=True)
             rsi_fig = create_indicator_chart(df, 'RSI')
             st.plotly_chart(rsi_fig, use_container_width=True, config={'displayModeBar': False})
         
         with col2:
-            st.markdown('<div class="section-header">📊 MACD</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header">MACD</div>', unsafe_allow_html=True)
             macd_fig = create_indicator_chart(df, 'MACD')
             st.plotly_chart(macd_fig, use_container_width=True, config={'displayModeBar': False})
     
     with tabs[1]:
-        st.markdown('<div class="section-header">📈 Technical Indicators</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Technical Indicators</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         
@@ -1079,14 +1078,14 @@ def main():
         bb_fig = create_indicator_chart(df, 'Bollinger')
         st.plotly_chart(bb_fig, use_container_width=True, config={'displayModeBar': False})
         
-        with st.expander("📊 View Raw Indicator Data"):
+        with st.expander("View Raw Indicator Data"):
             display_cols = ['Date', 'Close', 'SMA_20', 'SMA_50', 'RSI', 'MACD', 'MACD_Signal', 'BB_Upper', 'BB_Lower']
             display_df = df[display_cols].tail(30).copy()
             display_df['Date'] = pd.to_datetime(display_df['Date']).dt.strftime('%Y-%m-%d')
             st.dataframe(display_df, use_container_width=True, hide_index=True)
     
     with tabs[2]:
-        st.markdown('<div class="section-header">🔮 AI Price Forecast</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">AI Price Forecast</div>', unsafe_allow_html=True)
         
         if st.button("Generate Forecast", use_container_width=True):
             forecast_results = {}
@@ -1113,7 +1112,7 @@ def main():
                 st.session_state.forecast = list(forecast_results.values())[0]
                 
                 if params['model'] == "Compare All":
-                    st.markdown("### 📊 Model Comparison")
+                    st.markdown("### Model Comparison")
                     
                     comparison_data = []
                     for name, result in forecast_results.items():
@@ -1131,7 +1130,7 @@ def main():
                     best_model = min(forecast_results.items(), key=lambda x: x[1]['metrics']['RMSE'])
                     st.markdown(f"""
                     <div class="success-box">
-                        ✅ <strong>Best Model:</strong> {best_model[0]} (lowest RMSE: ${best_model[1]['metrics']['RMSE']:,.2f})
+                        <strong>Best Model:</strong> {best_model[0]} (lowest RMSE: ${best_model[1]['metrics']['RMSE']:,.2f})
                     </div>
                     """, unsafe_allow_html=True)
         
@@ -1145,7 +1144,7 @@ def main():
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             
             with col2:
-                st.markdown("### 📋 Forecast Details")
+                st.markdown("### Forecast Details")
                 
                 forecast_df = fc['forecast'].copy()
                 forecast_df['Date'] = pd.to_datetime(forecast_df['Date']).dt.strftime('%Y-%m-%d')
@@ -1165,10 +1164,10 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("👆 Click 'Generate Forecast' to run the AI forecasting model.")
+            st.info("Click 'Generate Forecast' to run the AI forecasting model.")
     
     with tabs[3]:
-        st.markdown('<div class="section-header">🎯 Trading Signals</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Trading Signals</div>', unsafe_allow_html=True)
         
         signal = signal_data['signal']
         strength = signal_data['strength']
@@ -1194,10 +1193,9 @@ def main():
             """, unsafe_allow_html=True)
         
         with col2:
-            st.markdown("### 📝 Signal Analysis")
+            st.markdown("### Signal Analysis")
             for reason in signal_data['reasons']:
-                icon = "✅" if "Bullish" in reason or "buy" in reason.lower() else ("❌" if "Bearish" in reason or "sell" in reason.lower() else "ℹ️")
-                st.markdown(f"{icon} {reason}")
+                st.markdown(f"- {reason}")
         
         st.markdown("---")
         
@@ -1208,7 +1206,7 @@ def main():
                 st.plotly_chart(signal_fig, use_container_width=True, config={'displayModeBar': False})
     
     with tabs[4]:
-        st.markdown('<div class="section-header">📉 Strategy Backtesting</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Strategy Backtesting</div>', unsafe_allow_html=True)
         
         signal_history = generate_signal_history(df, days=len(df))
         
@@ -1280,7 +1278,7 @@ def main():
                     equity_fig = create_equity_chart(results['equity_curve'], benchmark)
                     st.plotly_chart(equity_fig, use_container_width=True, config={'displayModeBar': False})
                     
-                    with st.expander("📋 Trade Log"):
+                    with st.expander("Trade Log"):
                         if results['trades']:
                             trades_df = pd.DataFrame(results['trades'])
                             trades_df['date'] = pd.to_datetime(trades_df['date']).dt.strftime('%Y-%m-%d')
@@ -1296,7 +1294,7 @@ def main():
             st.warning("Insufficient data for backtesting. Please ensure you have enough historical data.")
     
     with tabs[5]:
-        st.markdown('<div class="section-header">⚠️ Volatility Alerts & Risk Analysis</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Volatility Alerts & Risk Analysis</div>', unsafe_allow_html=True)
         
         vol_7d = indicators.get('volatility_7d', 0)
         vol_14d = indicators.get('volatility_14d', 0)
@@ -1336,12 +1334,12 @@ def main():
             if not high_vol_days.empty:
                 st.markdown(f"""
                 <div class="danger-box">
-                    ⚠️ <strong>{len(high_vol_days)} high volatility events</strong> detected in recent history 
+                    <strong>{len(high_vol_days)} high volatility events</strong> detected in recent history 
                     (threshold: {vol_threshold}% daily change)
                 </div>
                 """, unsafe_allow_html=True)
                 
-                with st.expander("📋 High Volatility Days"):
+                with st.expander("High Volatility Days"):
                     display_df = high_vol_days[['Date', 'Close', 'Volatility_7d']].copy()
                     display_df['Date'] = pd.to_datetime(display_df['Date']).dt.strftime('%Y-%m-%d')
                     display_df['Volatility_7d'] = display_df['Volatility_7d'].apply(lambda x: f"{x:.1f}%")
@@ -1350,11 +1348,11 @@ def main():
             else:
                 st.markdown("""
                 <div class="success-box">
-                    ✅ No high volatility events detected based on current threshold.
+                    No high volatility events detected based on current threshold.
                 </div>
                 """, unsafe_allow_html=True)
         
-        st.markdown("### 📊 Volatility Chart")
+        st.markdown("### Volatility Chart")
         
         vol_fig = go.Figure()
         
