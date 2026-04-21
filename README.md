@@ -8,13 +8,11 @@ It combines:
 - Financial data APIs   
 - Interactive visual analytics 
 
----
 
-##  Live App
-> *(Add your Streamlit link here after deployment)*  
-https://your-app-link.streamlit.app
 
----
+
+
+
 
 ## App Preview
 
@@ -27,10 +25,7 @@ https://your-app-link.streamlit.app
 ###  Forecasting Models
 ![Forecast](Screenshot%202026-04-21%20172302.png)
 
-###  Trading Signals
-![Signals](assets/signals.png)
 
----
 
 ##  Features
 
@@ -58,6 +53,5 @@ https://your-app-link.streamlit.app
 - Strategy performance evaluation
 - Buy & Hold comparison
 
----
 
-## 🏗️ Project Structure
+##  Project Structure
